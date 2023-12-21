@@ -8,8 +8,11 @@ import * as THREE from 'three'
     0.1,
     1000
   )
-
-  const renderer = new THREE.WebGLRenderer();
+  camera.position.set(4.61, 2.74, 8)
+  const renderer = new THREE.WebGLRenderer({
+    alpha: true,
+    antialias: true
+  });
   renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
@@ -18,6 +21,9 @@ import * as THREE from 'three'
 
   const obstacles = [];
   
+  let frames = 0;
+  let obstAmount = 220;
+  let counter = 0;
   const keys = {
     W: {
       pressed: false
@@ -77,7 +83,8 @@ import * as THREE from 'three'
       depth,
       color,
       velocity,
-      position 
+      position,
+      zAcceleration = false
     }) {
       const geometry = new THREE.BoxGeometry(width, height, depth);
       const material = new THREE.MeshStandardMaterial({ color });
@@ -97,6 +104,7 @@ import * as THREE from 'three'
 
       this.front = this.position.z + this.depth / 2
       this.back = this.position.z - this.depth / 2
+      this.zAcceleration = zAcceleration
     }
 
     addBouncing() {
@@ -108,7 +116,6 @@ import * as THREE from 'three'
           fig2: platform
         })
       ) {
-        console.log(this.velocity.y)
         this.velocity.y *= 0.7;
         this.velocity.y = -this.velocity.y
       } else {
@@ -125,6 +132,8 @@ import * as THREE from 'three'
 
       this.front = this.position.z + this.depth / 2
       this.back = this.position.z - this.depth / 2
+
+      if (this.zAcceleration) this.velocity.z += 0.0003
 
       this.position.x += this.velocity.x
       this.position.z += this.velocity.z
@@ -201,9 +210,49 @@ import * as THREE from 'three'
   camera.position.z = 5
 
   const animate = () => {
-    requestAnimationFrame(animate);
+    const animationId = requestAnimationFrame(animate);
     renderer.render(scene, camera);
     moveCube();
     cube.changePosition(platform);
+
+    obstacles.forEach((obstacle) => {
+      obstacle.changePosition(platform)
+      if (
+        checkBoundaries({
+          fig1: cube,
+          fig2: obstacle
+        })
+      ) {
+        cancelAnimationFrame(animationId)
+      } else {counter++}
+    })
+
+    if (frames % obstAmount === 0) {
+      if (obstAmount > 20) obstAmount -= 20
+
+      const obstacle = new GeometryElement({
+        width: 1,
+        height: 1,
+        depth: 1,
+        position: {
+          x: (Math.random() - 0.5) * 10,
+          y: 0,
+          z: -15
+        },
+        velocity: {
+          x: 0,
+          y: 0,
+          z: 0.006
+        },
+        color: 'red',
+        zAcceleration: true
+      })
+      obstacle.castShadow = true
+      scene.add(obstacle)
+      obstacles.push(obstacle)
+    }
+
+    frames++
+    console.log(counter)
   }
   animate()
