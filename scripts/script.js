@@ -1,6 +1,7 @@
 import * as THREE from 'three'
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
+  const mainBlock = document.getElementById("main");
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(
     75,
@@ -165,7 +166,7 @@ import * as THREE from 'three'
     width: 1,
     height: 1,
     depth: 1,
-    color: '#00ff00',
+    color: 'white',
     velocity: {
       x: 0,
       y: -0.01,
@@ -184,7 +185,7 @@ import * as THREE from 'three'
     width: 10,
     height: 0.5,
     depth: 50,
-    color: '#0369a1',
+    color: 'black',
     velocity: {
       x: 0,
       y: 0,
@@ -224,6 +225,13 @@ import * as THREE from 'three'
         })
       ) {
         cancelAnimationFrame(animationId)
+        let gameOver = document.createElement("h2");
+        let restart = document.createElement("button");
+        restart.innerText = "Restart"
+        restart.addEventListener("click", (e) => location.reload())
+        gameOver.innerText = `Game over. Your score is ${counter}`
+        mainBlock.append(gameOver)
+        mainBlock.append(restart)
       } else {counter++}
     })
 
